@@ -79,10 +79,9 @@ export default function LoginView() {
                 sound.
               </span>
 
-              <span className="text-sm md:text-base lg:text-lg text-white text-center">
-                Explore music through geography. Discover what the world sounds
-                like — one city, one beat, one moment at a time.
-              </span>
+              {/* <span className="text-sm md:text-base lg:text-lg text-white text-center">
+                Discover the world through music, one city at a time.
+              </span> */}
             </div>
           </div>
         </div>
@@ -96,28 +95,25 @@ export default function LoginView() {
               WELCOME BACK
             </span>
             <span className="text-2xl md:text-3xl lg:text-4xl font-bold mt-2">
-              Sign in to your account
+              Account Login
             </span>
-            <span className="text-xs md:text-sm text-[#6A7282] mt-2">
+            <span className="text-xs md:text-xs text-[#6A7282] mt-2">
               Don&apos;t have an account?
               <Link
                 href="/signup"
-                className="text-xs md:text-sm text-[#16A34A] italic underline hover:no-underline ml-1"
+                className="text-xs md:text-xs text-[#16A34A] italic underline hover:no-underline ml-1"
               >
                 Create account here
               </Link>
             </span>
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             {/* Email input */}
-            <div className="flex flex-col gap-1">
-              <label
-                htmlFor="email"
-                className="text-sm md:text-base font-medium"
-              >
+            <div className="flex flex-col gap-2">
+              {/* <label htmlFor="email" className="text-sm md:text-sm font-medium">
                 Email address
-              </label>
+              </label> */}
               <div className="flex flex-row gap-2 bg-[#F1F5F9] p-3 rounded-md">
                 <Mail className="w-5 h-5 text-[#6A7282]" />
                 <input
@@ -125,28 +121,14 @@ export default function LoginView() {
                   type="email"
                   value={email}
                   onChange={(e) => handleEmailChange(e.target.value)}
-                  placeholder="name@company.com"
-                  className="flex-1 text-sm md:text-base bg-transparent outline-none w-full"
+                  placeholder="Email Address"
+                  className="flex-1 text-sm md:text-sm bg-transparent outline-none w-full"
                   disabled={isLoading}
                 />
               </div>
             </div>
             {/* Password input */}
-            <div className="flex flex-col gap-1">
-              <div className="flex flex-row justify-between">
-                <label
-                  htmlFor="password"
-                  className="text-sm md:text-base font-medium"
-                >
-                  Password
-                </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs md:text-sm text-[#16A34A] hover:underline"
-                >
-                  Forgot your password?
-                </Link>
-              </div>
+            <div className="flex flex-col w-full gap-2">
               <div className="flex flex-row gap-2 bg-[#F1F5F9] p-3 rounded-md">
                 <LockKeyhole className="w-5 h-5 text-[#6A7282]" />
                 <input
@@ -154,23 +136,38 @@ export default function LoginView() {
                   type="password"
                   value={password}
                   onChange={(e) => handlePasswordChange(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="Password"
                   className="flex-1 text-sm md:text-base bg-transparent outline-none w-full"
                   disabled={isLoading}
                 />
+              </div>
+
+              <div className="flex flex-row  w-full">
+                {/* <label
+                  htmlFor="password"
+                  className="text-sm md:text-sm font-medium"
+                >
+                  Password
+                </label> */}
+                <Link
+                  href="/forgot-password"
+                  className="text-xs md:text-xs text-[#16A34A] hover:underline"
+                >
+                  Forgot your password?
+                </Link>
               </div>
             </div>
           </div>
 
           {/* checkbox */}
-          <div className="flex flex-row gap-2">
+          <div className="flex flex-row gap-2 flex items-center ">
             <input
               id="remember"
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => handleRememberMeChange(e.target.checked)}
               disabled={isLoading}
-              className="w-5 h-5 cursor-pointer"
+              className="w-3 h-3 cursor-pointer flex item-center justify-center"
             />
             <label
               htmlFor="remember"
@@ -188,7 +185,7 @@ export default function LoginView() {
           )}
 
           {/* Button component */}
-          <form onSubmit={handleSubmit} className="w-full">
+          <form onSubmit={handleSubmit} className="w-full my-2">
             <button
               type="submit"
               disabled={isLoading}
@@ -211,31 +208,31 @@ export default function LoginView() {
             <button
               type="button"
               disabled={isLoading}
-              className="flex flex-row items-center justify-center gap-2 border border-gray-300 p-3 w-full rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex flex-row items-center justify-center gap-2 border border-gray-300 p-2 w-full rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Search className="w-5 h-5 text-[#6A7282]" />
-              <span className="text-sm md:text-base">Google</span>
+              <span className="text-sm md:text-sm">Google</span>
             </button>
 
             {/* Facebook button */}
             <button
               type="button"
               disabled={isLoading}
-              className="flex flex-row items-center justify-center gap-2 border border-gray-300 p-3 w-full rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex flex-row items-center justify-center gap-2 border border-gray-300 p-2 w-full rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <CircleUserRound className="w-5 h-5 text-[#6A7282]" />
-              <span className="text-sm md:text-base">Facebook</span>
+              <span className="text-sm md:text-sm">Facebook</span>
             </button>
           </div>
           <span className="text-xs md:text-sm text-center text-[#6A7282]">
-            By signing in you agree to our{" "}
+            By signing in, you agree to our{" "}
             <Link
               href="/terms"
               className="text-xs md:text-sm text-[#16A34A] hover:underline"
             >
-              Terms of Service
+              Terms &
             </Link>{" "}
-            and{" "}
+            &{" "}
             <Link
               href="/privacy"
               className="text-xs md:text-sm text-[#16A34A] hover:underline"

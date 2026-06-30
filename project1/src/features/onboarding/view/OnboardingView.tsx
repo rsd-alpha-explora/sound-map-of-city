@@ -9,7 +9,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { useOnboardingViewModel } from "@/features/onboarding/viewmodel/useOnboardingViewModel";
-
+import Image from "next/image";
 export default function OnboardingView() {
   const {
     step,
@@ -22,11 +22,15 @@ export default function OnboardingView() {
     handleSubmit,
   } = useOnboardingViewModel();
 
-  const title = isLocationStep ? "Where are you from?" : "What should I call you?";
+  const title = isLocationStep
+    ? "Where are you from?"
+    : "What should I call you?";
   const description = isLocationStep
     ? "Help us curate sounds, artists, and local music that truly resonates with you."
     : "Choose the name SoundMap should use around your dashboard.";
-  const placeholder = isLocationStep ? "Search your city..." : "Enter your name...";
+  const placeholder = isLocationStep
+    ? "Search your city..."
+    : "Enter your name...";
   const inputValue = isLocationStep ? location : displayName;
   const StepIcon = isLocationStep ? Search : UserRound;
   const stepNumber = isLocationStep ? "1" : "2";
@@ -67,10 +71,25 @@ export default function OnboardingView() {
 
         <section className="flex w-full flex-1 flex-col items-center justify-center pb-16">
           <div className="mb-12 flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#166D45] text-white">
-              <AudioWaveform className="h-5 w-5" />
+            {/* Logo Component */}
+            <div className="flex flex-row items-center gap-2">
+              <div className="flex items-center justify-center h-8 w-8 md:h-10 md:w-10 bg-[#2B684B] rounded-full">
+                <Image
+                  src="/logo.svg"
+                  alt="Logo"
+                  width={20}
+                  height={20}
+                  className="w-4 h-4 md:w-5 md:h-5"
+                />
+              </div>
+              <span className="text-sm md:text-base font-bold text-[#2B684B]">
+                Sound
+                <span className="text-sm md:text-base font-bold text-[#2B684B]">
+                  {" "}
+                  Map
+                </span>
+              </span>
             </div>
-            <span className="text-xl font-extrabold">SoundMap</span>
           </div>
 
           <div className="mb-5 flex items-center gap-3 text-[10px] font-extrabold tracking-wide text-[#22C55E]">
@@ -79,9 +98,19 @@ export default function OnboardingView() {
             <div className="h-px w-8 bg-[#86EFAC]" />
           </div>
 
-          <h1 className="text-center text-4xl font-extrabold leading-tight md:text-6xl">
-            {title}
-          </h1>
+          {/* Conditional Rendering based on the text  */}
+          {/* Note: Not optimized for now  */}
+          {title === "What should I call you?" && (
+            <h1 className="text-center text-3xl font-extrabold leading-tight md:text-[52px]">
+              {title}
+            </h1>
+          )}
+
+          {title === "Where are you from?" && (
+            <h1 className="text-center text-3xl font-extrabold leading-tight md:text-[55px]">
+              {title}
+            </h1>
+          )}
           <p className="mt-5 max-w-md text-center text-sm font-medium leading-6 text-[#8A94A6] md:text-base">
             {description}
           </p>

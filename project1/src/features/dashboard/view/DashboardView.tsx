@@ -1,7 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useState, type FormEvent, type ReactNode } from "react";
+import {
+  useRef,
+  useState,
+  type FormEvent,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from "react";
 import {
   Building2,
   ChevronDown,
@@ -12,7 +19,6 @@ import {
   LogOut,
   MapPin,
   MessageSquare,
-  Navigation,
   Plus,
   Search,
   Send,
@@ -47,28 +53,32 @@ const pinClasses: Record<NoiseLevel, string> = {
 function WaveBars({
   samples,
   decibel,
-  tone = "green",
+  tone = "auto",
 }: {
   samples: number[];
   decibel: number;
-  tone?: "green" | "gray";
+  tone?: "auto" | "gray";
 }) {
   const speed = Math.max(0.45, 1.65 - decibel / 100);
   const scale = Math.max(0.7, decibel / 48);
+  const level = getNoiseLevel(decibel);
+  const barColorClass =
+    tone === "gray"
+      ? "bg-[#B8C0CC]"
+      : level === "moderate"
+        ? "bg-[#F59E0B]"
+        : level === "super-noisy"
+          ? "bg-[#EF4444]"
+          : "bg-[#16A34A]";
 
   return (
-    <div
-      className="flex h-8 items-end gap-0.5 overflow-hidden"
-      aria-hidden="true"
-    >
+    <div className="flex h-8 items-end gap-1 mt-[20px]" aria-hidden="true">
       {samples.map((sample, index) => (
         <span
           key={`${sample}-${index}`}
-          className={`w-1 rounded-full ${
-            tone === "green" ? "bg-[#16A34A]" : "bg-[#B8C0CC]"
-          }`}
+          className={`w-2 rounded-full ${barColorClass}`}
           style={{
-            height: `${Math.max(5, sample * 0.32)}px`,
+            height: `${Math.max(6, sample * 0.3)}px`,
             animation: `sound-wave ${speed}s ease-in-out ${index * 0.07}s infinite alternate`,
             transformOrigin: "bottom",
             ["--wave-scale" as string]: scale,
@@ -83,7 +93,7 @@ function PlaceImageTemplate({ type }: { type: PlaceType }) {
   const Icon = placeTypeIcons[type];
 
   return (
-    <div className="relative flex h-24 w-28 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#DDE7E4]">
+    <div className="relative flex h-24 w-22 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#DDE7E4]">
       <div className="absolute inset-0 bg-[linear-gradient(135deg,#DDE7E4_0%,#F8FAFC_48%,#BFD8CC_100%)]" />
       <div className="absolute inset-x-0 bottom-0 h-10 bg-[#0F172A]/10" />
       <Icon className="relative h-8 w-8 text-[#6A7282]" />
@@ -116,13 +126,13 @@ function PlaceCard({
       }`}
     >
       <PlaceImageTemplate type={place.type} />
+
       <div className="min-w-0 flex-1 py-1">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start justify-between gap-1">
           <div className="min-w-0">
             <h3 className="truncate text-sm font-extrabold text-[#111827]">
               {place.name}
             </h3>
-            <p className="text-xs font-bold text-[#64748B]">{place.type}</p>
           </div>
           <span
             className={`rounded-full px-2 py-1 text-[10px] font-extrabold ${noiseMeta.bgClass} ${noiseMeta.colorClass}`}
@@ -130,11 +140,11 @@ function PlaceCard({
             {place.decibel} dB
           </span>
         </div>
-        <p className="mt-1 flex items-center gap-1 truncate text-[11px] font-medium text-[#94A3B8]">
+        <p className="mt-[-2px] flex items-center gap-1 truncate text-[11px] font-medium text-[#94A3B8]">
           <MapPin className="h-3 w-3 shrink-0" />
           {place.address}
         </p>
-        <div className="mt-2">
+        <div className="mt-2 overflow-visible">
           <WaveBars
             samples={place.waveSamples}
             decibel={place.decibel}
@@ -217,7 +227,64 @@ function SubmitLocationModal({
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   const [decibelValue, setDecibelValue] = useState(41);
+  const [placement, setPlacement] = useState({ x: 50, y: 50 });
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [selectedType, setSelectedType] = useState<PlaceType>("Cafe");
+  const [isDraggingMap, setIsDraggingMap] = useState(false);
+  const [shouldPlaceMarker, setShouldPlaceMarker] = useState(true);
+  const dragOriginRef = useRef({ x: 0, y: 0, offsetX: 0, offsetY: 0 });
   const noiseMeta = getNoiseLevelMeta(decibelValue);
+
+  const handleMapPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragOriginRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+      offsetX: panOffset.x,
+      offsetY: panOffset.y,
+    };
+    setIsDraggingMap(true);
+    setShouldPlaceMarker(true);
+  };
+
+  const handleMapPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!isDraggingMap) return;
+
+    const deltaX = event.clientX - dragOriginRef.current.x;
+    const deltaY = event.clientY - dragOriginRef.current.y;
+
+    setPanOffset({
+      x: dragOriginRef.current.offsetX + deltaX,
+      y: dragOriginRef.current.offsetY + deltaY,
+    });
+
+    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+      setShouldPlaceMarker(false);
+    }
+  };
+
+  const handleMapPointerUp = () => {
+    setIsDraggingMap(false);
+  };
+
+  const handleMapPick = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (!shouldPlaceMarker) {
+      setShouldPlaceMarker(true);
+      return;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const nextX =
+      ((event.clientX - rect.left - panOffset.x) / rect.width) * 100;
+    const nextY =
+      ((event.clientY - rect.top - panOffset.y) / rect.height) * 100;
+
+    setPlacement({
+      x: Math.min(100, Math.max(0, nextX)),
+      y: Math.min(100, Math.max(0, nextY)),
+    });
+  };
 
   return (
     <ModalShell
@@ -236,10 +303,17 @@ function SubmitLocationModal({
             />
           </FormField>
           <FormField label="Place type">
-            <select name="type" className={inputClassName} defaultValue="Cafe">
-              <option>Cafe</option>
-              <option>Hotel</option>
-              <option>Apartment</option>
+            <select
+              name="type"
+              className={inputClassName}
+              value={selectedType}
+              onChange={(event) =>
+                setSelectedType(event.target.value as PlaceType)
+              }
+            >
+              <option value="Cafe">Cafe</option>
+              <option value="Hotel">Hotel</option>
+              <option value="Apartment">Apartment</option>
             </select>
           </FormField>
         </div>
@@ -290,37 +364,60 @@ function SubmitLocationModal({
           />
         </FormField>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <FormField
-            label="Map X position"
-            helper="Allowed range: 0 minimum to 100 maximum. 0 is far left, 100 is far right."
-          >
-            <input
-              name="x"
-              className={inputClassName}
-              type="number"
-              min="0"
-              max="100"
-              placeholder="56"
-              required
-            />
-          </FormField>
-          <FormField
-            label="Map Y position"
-            helper="Allowed range: 0 minimum to 100 maximum. 0 is top, 100 is bottom."
-          >
-            <input
-              name="y"
-              className={inputClassName}
-              type="number"
-              min="0"
-              max="100"
-              placeholder="42"
-              required
-            />
-          </FormField>
-        </div>
-
+        <FormField
+          label="Map position"
+          helper="Drag to pan the map, then click to place the location visually."
+        >
+          <div className="space-y-3">
+            <div
+              onPointerDown={handleMapPointerDown}
+              onPointerMove={handleMapPointerMove}
+              onPointerUp={handleMapPointerUp}
+              onPointerLeave={handleMapPointerUp}
+              onClick={handleMapPick}
+              className="relative h-56 overflow-hidden rounded-2xl border border-[#DDE7E4] bg-[#F8FAFC] shadow-inner"
+              style={{
+                touchAction: "none",
+                cursor: isDraggingMap ? "grabbing" : "grab",
+              }}
+            >
+              <div
+                className="absolute inset-0"
+                style={{
+                  transform: `translate(${panOffset.x}px, ${panOffset.y}px)`,
+                }}
+              >
+                <Image
+                  src="/Map.svg"
+                  alt="Map preview"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 480px"
+                  className="object-cover"
+                />
+              </div>
+              <div className="absolute inset-0 cursor-crosshair" />
+              <div
+                className="absolute -translate-x-1/2 -translate-y-1/2"
+                style={{ left: `${placement.x}%`, top: `${placement.y}%` }}
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#16A34A] text-white shadow-[0_0_0_8px_rgba(22,163,74,0.18)]">
+                  {(() => {
+                    const MarkerIcon = placeTypeIcons[selectedType] ?? MapPin;
+                    return <MarkerIcon className="h-4 w-4" />;
+                  })()}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between rounded-xl border border-[#DDE7E4] bg-white px-3 py-2 text-xs font-semibold text-[#64748B]">
+              <span>Selected position</span>
+              <span className="font-extrabold text-[#111827]">
+                {Math.round(placement.x)}% × {Math.round(placement.y)}%
+              </span>
+            </div>
+          </div>
+          <input type="hidden" name="x" value={placement.x} />
+          <input type="hidden" name="y" value={placement.y} />
+        </FormField>
         <div className="flex justify-end gap-3 pt-2">
           <button
             type="button"
@@ -562,6 +659,31 @@ export default function DashboardView() {
   return (
     <main className="h-screen overflow-hidden bg-[#F8FAFC] text-[#111827]">
       <style jsx global>{`
+        * {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(148, 163, 184, 0.55) transparent;
+        }
+
+        *::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+
+        *::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        *::-webkit-scrollbar-thumb {
+          background-color: rgba(148, 163, 184, 0.55);
+          border-radius: 999px;
+          border: 2px solid transparent;
+          background-clip: padding-box;
+        }
+
+        *::-webkit-scrollbar-thumb:hover {
+          background-color: rgba(100, 116, 139, 0.75);
+        }
+
         @keyframes sound-wave {
           from {
             transform: scaleY(0.55);
@@ -600,7 +722,7 @@ export default function DashboardView() {
         <button
           type="button"
           onClick={handleOpenLocationForm}
-          className="ml-auto hidden h-9 items-center gap-2 rounded-xl bg-[#17A64C] px-4 text-sm font-extrabold transition hover:bg-[#15803D] md:flex"
+          className="ml-auto hidden h-10 items-center gap-2 rounded-2xl bg-white px-4 text-sm font-extrabold text-[#16A34A] shadow-[0_10px_24px_rgba(22,163,74,0.35)] ring-1 ring-white/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(22,163,74,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#86EFAC] md:flex"
         >
           <Plus className="h-4 w-4" />
           Submit a Location
@@ -639,8 +761,8 @@ export default function DashboardView() {
         </div>
       </header>
 
-      <div className="grid h-[calc(100vh-56px)] grid-cols-1 lg:grid-cols-[180px_320px_minmax(0,1fr)]">
-        <aside className="hidden border-r border-[#E2E8F0] bg-white p-4 lg:block">
+      <div className=" grid h-[calc(100vh-56px)] grid-cols-1 lg:grid-cols-[180px_380px_minmax(0,1fr)]">
+        <aside className="overflow-y-auto border-r border-[#E2E8F0] bg-white p-4 lg:block">
           <div className="mb-5 flex items-center justify-between">
             <p className="text-xs font-extrabold uppercase tracking-wide text-[#A1AAB8]">
               Filters
@@ -706,39 +828,16 @@ export default function DashboardView() {
               ))}
             </div>
           </div>
-
-          <div className="mt-20 border-t border-[#E2E8F0] pt-5">
-            <p className="mb-3 text-xs font-extrabold uppercase tracking-wide text-[#A1AAB8]">
-              dB Legend
-            </p>
-            {noiseLevels.map((level) => (
-              <div
-                key={level.id}
-                className="mb-2 flex items-center gap-2 text-[11px] font-bold text-[#64748B]"
-              >
-                <span
-                  className={`h-2.5 w-2.5 rounded-full ${
-                    level.id === "quiet"
-                      ? "bg-[#16A34A]"
-                      : level.id === "moderate"
-                        ? "bg-[#F59E0B]"
-                        : "bg-[#EF4444]"
-                  }`}
-                />
-                {level.label}
-              </div>
-            ))}
-          </div>
         </aside>
 
-        <section className="hidden overflow-y-auto border-r border-[#E2E8F0] bg-[#F8FAFC] p-4 lg:block">
+        <section className=" overflow-y-auto border-r border-[#E2E8F0] bg-[#F8FAFC] p-4 lg:block">
           <h1 className="text-2xl font-extrabold text-[#111827]">
             Places in {profileLocation}
           </h1>
           <p className="mb-4 text-sm font-bold text-[#94A3B8]">
             {filteredPlaces.length} places found
           </p>
-          <div className="space-y-3">
+          <div className="space-y-3 ">
             {filteredPlaces.map((place) => (
               <PlaceCard
                 key={place.id}
@@ -777,7 +876,10 @@ export default function DashboardView() {
                 }}
                 aria-label={`Show details for ${place.name}`}
               >
-                <Navigation className="h-4 w-4 fill-white" />
+                {(() => {
+                  const MarkerIcon = placeTypeIcons[place.type] ?? MapPin;
+                  return <MarkerIcon className="h-4 w-4" />;
+                })()}
               </button>
             );
           })}
