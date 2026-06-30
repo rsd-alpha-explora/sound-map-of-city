@@ -698,7 +698,7 @@ export default function DashboardView() {
         <div className="flex shrink-0 items-center gap-2">
           <div className="flex items-center justify-center h-8 w-8 md:h-10 md:w-10 bg-[#2B684B] rounded-full">
             <Image
-              src="/Logo.png"
+              src="/logo.svg"
               alt="Logo"
               width={20}
               height={20}
