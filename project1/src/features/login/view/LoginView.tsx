@@ -21,7 +21,7 @@ export default function LoginView() {
   return (
     <div className="flex flex-col lg:flex-row w-full h-screen">
       {/* Left side */}
-      <div className="hidden lg:flex relative w-full bg-gradient-to-l from-[#064E2B] to-[#22C55E] overflow-hidden">
+      <div className="hidden lg:flex relative w-full bg-linear-to-l from-[#064E2B] to-[#22C55E] overflow-hidden">
         {/* Decoration animation */}
         <div className="absolute -top-50 -right-50 h-150 w-150 rounded-full bg-[radial-gradient(circle,#17A64C,transparent_50%)] animate-pulse" />
         <div className="absolute -bottom-60 -left-80 h-150 w-150 rounded-full bg-[radial-gradient(circle,#52F28E,transparent_50%)] animate-pulse" />
@@ -160,7 +160,7 @@ export default function LoginView() {
           </div>
 
           {/* checkbox */}
-          <div className="flex flex-row gap-2 flex items-center ">
+          <div className=" flex-row gap-2 flex items-center ">
             <input
               id="remember"
               type="checkbox"
@@ -189,7 +189,7 @@ export default function LoginView() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full rounded-md p-3 bg-gradient-to-l from-[#16A34A] to-[#059669] text-white text-sm md:text-base font-medium hover:from-[#15803D] hover:to-[#047857] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-md p-3 bg-linear-to-l from-[#16A34A] to-[#059669] text-white text-sm md:text-base font-medium hover:from-[#15803D] hover:to-[#047857] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </button>
