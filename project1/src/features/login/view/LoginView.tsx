@@ -33,7 +33,7 @@ export default function LoginView() {
             <div className="flex flex-row items-center gap-2">
               <div className="flex items-center justify-center h-8 w-8 md:h-10 md:w-10 bg-[#2B684B] rounded-full">
                 <Image
-                  src="/Logo.png"
+                  src="/logo.svg"
                   alt="Logo"
                   width={20}
                   height={20}
@@ -56,7 +56,7 @@ export default function LoginView() {
               {/* Logo Component */}
               <div className="flex flex-col items-center justify-center rounded-full">
                 <Image
-                  src="/Logo.svg"
+                  src="/logo.svg"
                   alt="Logo"
                   width={250}
                   height={250}

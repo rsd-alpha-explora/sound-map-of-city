@@ -72,7 +72,7 @@ function WaveBars({
           : "bg-[#16A34A]";
 
   return (
-    <div className="flex h-8 items-end gap-1 mt-[20px]" aria-hidden="true">
+    <div className="flex h-8 items-end gap-1 mt-5" aria-hidden="true">
       {samples.map((sample, index) => (
         <span
           key={`${sample}-${index}`}
@@ -140,7 +140,7 @@ function PlaceCard({
             {place.decibel} dB
           </span>
         </div>
-        <p className="mt-[-2px] flex items-center gap-1 truncate text-[11px] font-medium text-[#94A3B8]">
+        <p className=" -mt-0.5 flex items-center gap-1 truncate text-[11px] font-medium text-[#94A3B8]">
           <MapPin className="h-3 w-3 shrink-0" />
           {place.address}
         </p>
